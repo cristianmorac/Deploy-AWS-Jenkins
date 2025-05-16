@@ -1,2 +1,2 @@
 ## Diagrama de arquitectura
-![Arquitectura de despliegue](img/diagrama.svg)
+![Arquitectura de despliegue](img/Diagrama.svg)
