@@ -1,1 +1,2 @@
-Deploy AWS con Jenkins, Terraform y Ansible
+## Diagrama de arquitectura
+![Arquitectura de despliegue](img/Diagrama.svg)
