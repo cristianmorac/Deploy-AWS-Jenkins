@@ -1,0 +1,5 @@
+App/test.db
+venv/
+App/.scannerwork
+App/sonar-project.properties
+App/__pycache__
