@@ -8,3 +8,4 @@ App/node_modules
 App/.env
 App/package-lock.json
 App/coverage/
+.scannerwork
