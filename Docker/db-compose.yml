@@ -1,18 +1,23 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: postgres_db
-    restart: always
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: mydb
+  db-app:
+    image: postgres:latest
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    container_name: db-app
+    networks:
+      app-net:
+        ipv4_address: 172.0.10.2
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpass
+      POSTGRES_DB: mydb
+    restart: unless-stopped
 
-volumes:
-  postgres_data:
+networks:
+  app-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.0.10.0/24
