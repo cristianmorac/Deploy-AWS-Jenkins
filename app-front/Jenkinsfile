@@ -16,8 +16,9 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     sh """
-                        echo "Running SonarQube analysis"
-                    """
+                        sonar-scanner -Dsonar.login=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
+                        
+                        """
                 }
             }
         }
