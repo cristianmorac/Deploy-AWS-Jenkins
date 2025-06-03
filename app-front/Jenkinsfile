@@ -4,23 +4,11 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://sonarqube:9000'
     }
-    
+
     stages {
         stage('checkout'){
             steps {
                 checkout scm
-            }
-        }
-
-        stage('SonarQube Analysis'){
-            withCredentials([string(credentialsId: 'TOKEN_SONAR', variable: 'SONAR_TOKEN')]){
-                sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=app-front \
-                    -Dsonar.sources=app-front/src \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.token=$SONAR_TOKEN
-                '''
             }
         }
     }
