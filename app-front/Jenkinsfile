@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://sonarqube:9000'
+    }
+    
     stages {
         stage('checkout'){
             steps {
