@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db-app:
+    image: postgres:latest
+    container_name: db-app
+    ports:
+      - "5432:5432"
+    networks:
+      app-net:
+        ipv4_address: 172.0.10.2
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpass
+      POSTGRES_DB: mydb
+    restart: unless-stopped
+
+  app:
+    image: app-v1
+    container_name: app-v1
+    networks:
+      app-net:
+        ipv4_address: 172.0.10.4
+    ports:
+      - "2000:2000"
+    env_file:
+      - .env
+    depends_on:
+      - db-app
+    restart: unless-stopped
+
+networks:
+  app-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.0.10.0/24
