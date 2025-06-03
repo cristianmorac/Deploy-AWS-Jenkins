@@ -14,7 +14,7 @@ pipeline {
 
         stage('SonarQube Analysis'){
             steps {
-                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN']) {
+                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     sh """
                         echo "Running SonarQube analysis"
                     """
