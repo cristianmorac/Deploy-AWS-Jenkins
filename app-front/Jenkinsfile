@@ -16,6 +16,14 @@ pipeline {
             }
         }
 
+        stage('install dependencies') {
+            steps {
+                dir('app-front') {
+                    sh 'npm install'
+                }
+            }
+        }
+
         stage('Test') {
             steps {
                 dir('app-front') {
@@ -41,8 +49,9 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ SonarQube Ok.'
-        }
+            echo '✅ SonarQube Analysis Ok.'
+            build job: 'pipeline-front-build',  wait: true
+            }
         failure {
             echo '❌ SonarQube fallo.'
         }
