@@ -31,5 +31,26 @@ pipeline {
                 }
             }
         }
+
+        stage('SonarQube Analysis'){
+            steps {
+                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
+                    sh """
+                        cd app-front
+                        npm test -- --watchAll=false
+                                                sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
+                        
+                        """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
     }
 }
