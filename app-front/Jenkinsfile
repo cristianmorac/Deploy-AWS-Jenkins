@@ -43,14 +43,53 @@ pipeline {
             }
         }
 
+        stage('Build React App') {
+            steps {
+                dir('app-front') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Archive Build') {
+            steps {
+                archiveArtifacts artifacts: 'app-front/build/**', fingerprint: true
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('app-front') {
+                    script {
+                        sh '''
+                            IMAGE_NAME="app-front"
+                            BUILD_NUMBER="${BUILD_NUMBER}"
+                            docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag ${IMAGE_NAME}:${BUILD_NUMBER} tlian0206/${IMAGE_NAME}:${BUILD_NUMBER}
+                        docker push mydockerhubuser/${IMAGE_NAME}:${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
+
     }
     post {
         always {
             cleanWs()
         }
         success {
-            echo '✅ SonarQube Analysis Ok.'
-            build job: 'pipeline-front-build',  wait: true
+            echo '✅ SonarQube Analysis y Build Ok.'
             }
         failure {
             echo '❌ SonarQube fallo.'
