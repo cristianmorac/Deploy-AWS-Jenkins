@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent docker{
+        image 'node:20-alpine'
+    }
 
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
