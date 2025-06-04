@@ -1,43 +1,50 @@
 pipeline {
     agent any
+
     tools {
-        maven 'maven_3'
-    }
+    nodejs 'Node-app'
+}
+
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
-        SONAR_TOKEN = credentials('TOKEN_SONAR')
     }
 
     stages {
-        stage('Checkout code') {
+        stage('checkout'){
             steps {
                 checkout scm
             }
         }
 
-        stage('Build') {
-            steps {
-                sh 'mvn compile'
-            }
-        }
-
         stage('Test') {
             steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('SonarQube Analysus') {
-            steps {
                 dir('app-front') {
-                    sh """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=app-front \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_TOKEN
-                    """
+                    sh 'npm test -- --coverage --watchAll=false'
                 }
             }
         }
+
+        stage('SonarQube Analysis'){
+            steps {
+                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
+                    sh """
+                        cd app-front
+                        sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
+                        """
+                }
+            }
+        }
+
+        post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo '✅ SonarQube Ok.'
+        }
+        failure {
+            echo '❌ SonarQube fallo.'
+        }
+    }
     }
 }
