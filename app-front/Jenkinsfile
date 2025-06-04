@@ -37,7 +37,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     sh """
                         cd app-front
-                        npm test -- --watchAll=false
+                        npm test -- --coverage --watchAll=false
                                                 sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
                         
                         """
