@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'Node-app'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('app-front') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build React App') {
+            steps {
+                dir('app-front') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Archive Build') {
+            steps {
+                archiveArtifacts artifacts: 'app-front/build/**', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build exitoso.'
+        }
+        failure {
+            echo '❌ Error en el build.'
+        }
+    }
+}
