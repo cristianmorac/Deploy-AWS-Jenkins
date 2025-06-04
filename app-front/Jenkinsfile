@@ -1,54 +1,41 @@
 pipeline {
     agent any
-
     tools {
-    nodejs 'Node-app'
-}
-
+        maven 'maven_3'
+    }
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_TOKEN = credentials('TOKEN_SONAR')
     }
 
     stages {
-        stage('checkout'){
+        stage('Checkout code') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build') {
             steps {
-                dir('app-front'){
-                    sh 'npm install'
-                }
+                sh 'mvn compile'
             }
         }
 
         stage('Test') {
             steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('SonarQube Analysus') {
+            steps {
                 dir('app-front') {
-                    sh 'npm test -- --coverage --watchAll=false'
-                }
-            }
-        }
-
-        stage('SonarQube Analysis'){
-            steps {
-                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     sh """
-                        cd app-front
-                        npm test -- --coverage --watchAll=false
-                                                sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
-                        
-                        """
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=app-front \
+                        -Dsonar.host.url=$SONAR_HOST_URL \
+                        -Dsonar.login=$SONAR_TOKEN
+                    """
                 }
             }
         }
