@@ -1,7 +1,5 @@
 pipeline {
-    agent docker{
-        image 'node:20-alpine'
-    }
+    agent any
 
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
@@ -20,7 +18,7 @@ pipeline {
                     sh """
                         cd app-front
                         npm test -- --watchAll=false
-                        sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
+                                                sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
                         
                         """
                 }
