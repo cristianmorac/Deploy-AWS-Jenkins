@@ -92,7 +92,7 @@ pipeline {
             echo '✅ SonarQube Analysis y Build Ok.'
             }
         failure {
-            echo '❌ SonarQube fallo.'
+            echo '❌ fallo validar logs.'
         }
     }
 }
