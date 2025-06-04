@@ -35,7 +35,8 @@ pipeline {
             }
         }
 
-        post {
+    }
+    post {
         always {
             cleanWs()
         }
@@ -45,6 +46,5 @@ pipeline {
         failure {
             echo '❌ SonarQube fallo.'
         }
-    }
     }
 }
