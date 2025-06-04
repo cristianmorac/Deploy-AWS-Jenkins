@@ -77,7 +77,7 @@ pipeline {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker tag ${IMAGE_NAME}:${BUILD_NUMBER} tlian0206/${IMAGE_NAME}:${BUILD_NUMBER}
-                        docker push mydockerhubuser/${IMAGE_NAME}:${BUILD_NUMBER}
+                        docker push tlian0206/${IMAGE_NAME}:${BUILD_NUMBER}
                     """
                 }
             }
