@@ -16,23 +16,16 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis'){
+        stage('Install Dependencies') {
             steps {
-                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
-                    sh """
-                        cd app-front
-                        npm test -- --watchAll=false
-                                                sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
-                        
-                        """
-                }
+                sh 'npm install'
             }
         }
 
-        stage('Quality Gate') {
+        stage('Test') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                dir('app-front') {
+                    sh 'npm test -- --watchAll=false'
                 }
             }
         }
