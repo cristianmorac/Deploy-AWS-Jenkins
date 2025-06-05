@@ -10,6 +10,7 @@ pipeline {
         USER_DOCKER = 'tlian0206'
         IMAGE_NAME="app-front"
         BUILD_NUMBER="${env.BUILD_NUMBER}"
+        PROY_DIR = 'app-front'
     }
 
     stages {
@@ -21,7 +22,7 @@ pipeline {
 
         stage('install dependencies & Test') {
             steps {
-                dir('app-front') {
+                dir("${PROY_DIR}") {
                     sh """npm install
                         npm test -- --coverage --watchAll=false
                         """
@@ -32,19 +33,22 @@ pipeline {
         stage('SonarQube Analysis'){
             steps {
                 withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
-                    sh """
-                        cd app-front
+                    dir("${PROY_DIR}"){
+                        sh """
                         sonar-scanner -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
                         """
+                    }
                 }
             }
         }
 
         stage('Build React App & Docker image') {
             steps {
-                dir('app-front') {
-                    sh """npm run build
-                        docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."""
+                dir("${PROY_DIR}") {
+                    sh """
+                    npm run build
+                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    """
                 }
             }
         }
