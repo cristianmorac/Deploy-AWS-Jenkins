@@ -23,7 +23,7 @@ pipeline {
         stage('install dependencies & Test') {
             steps {
                 dir("${PROY_DIR}") {
-                    sh """npm install
+                    sh """npm ci
                         npm test -- --coverage --watchAll=false
                         """
                 }
