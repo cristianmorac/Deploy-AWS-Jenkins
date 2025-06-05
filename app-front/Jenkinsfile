@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
+        USER_DOCKER = 'tlian0206'
         IMAGE_NAME="app-front"
         BUILD_NUMBER="${env.BUILD_NUMBER}"
     }
@@ -18,18 +19,12 @@ pipeline {
             }
         }
 
-        stage('install dependencies') {
+        stage('install dependencies & Test') {
             steps {
                 dir('app-front') {
-                    sh 'npm install'
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                dir('app-front') {
-                    sh 'npm test -- --coverage --watchAll=false'
+                    sh """npm install
+                        npm test -- --coverage --watchAll=false
+                        """
                 }
             }
         }
@@ -39,16 +34,17 @@ pipeline {
                 withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     sh """
                         cd app-front
-                        sonar-scanner -X -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
+                        sonar-scanner -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
                         """
                 }
             }
         }
 
-        stage('Build React App') {
+        stage('Build React App & Docker image') {
             steps {
                 dir('app-front') {
-                    sh 'npm run build'
+                    sh """npm run build
+                        docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."""
                 }
             }
         }
@@ -59,37 +55,25 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                dir('app-front') {
-                    script {
-                        sh '''
-                            docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DOCKER', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag ${IMAGE_NAME}:${BUILD_NUMBER} tlian0206/${IMAGE_NAME}:V-${BUILD_NUMBER}
-                        docker push tlian0206/${IMAGE_NAME}:V-${BUILD_NUMBER}
+                        TAG="${USER_DOCKER}/${IMAGE_NAME}:V-${BUILD_NUMBER}"
+                        docker tag ${IMAGE_NAME}:${BUILD_NUMBER} $TAG
+                        docker push $TAG}
                     """
                 }
             }
         }
-
     }
     post {
         always {
             cleanWs()
         }
         success {
-            echo '✅ SonarQube Analysis y Build Ok.'
+            echo '✅ Contenerizado y subido a DockerHub.'
             }
         failure {
             echo '❌ fallo validar logs.'
