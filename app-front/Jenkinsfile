@@ -7,6 +7,8 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
+        IMAGE_NAME="app-front"
+        BUILD_NUMBER="${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -62,8 +64,6 @@ pipeline {
                 dir('app-front') {
                     script {
                         sh '''
-                            IMAGE_NAME="app-front"
-                            BUILD_NUMBER="${BUILD_NUMBER}"
                             docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
                         '''
                     }
