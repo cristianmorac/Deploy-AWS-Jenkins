@@ -23,9 +23,16 @@ pipeline {
         stage('install dependencies & Test') {
             steps {
                 dir("${PROY_DIR}") {
-                    sh """npm ci
+                    sh '''
+                        if [ -f package-lock.json ]; then
+                          npm ci
+                        else
+                          echo "⚠️ package-lock.json no encontrado, usando npm install"
+                          npm install
+                        fi
+
                         npm test -- --coverage --watchAll=false
-                        """
+                    '''
                 }
             }
         }
