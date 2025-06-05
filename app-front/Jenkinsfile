@@ -62,7 +62,7 @@ pipeline {
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         TAG="${USER_DOCKER}/${IMAGE_NAME}:V-${BUILD_NUMBER}"
                         docker tag ${IMAGE_NAME}:${BUILD_NUMBER} $TAG
-                        docker push $TAG}
+                        docker push $TAG
                     """
                 }
             }
