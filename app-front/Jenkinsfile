@@ -1,95 +1,69 @@
 pipeline {
+
     agent any
 
     tools {
-    nodejs 'Node-app'
-}
+        nodejs 'Node-app'
+        sonarQubeScanner 'SonarScanner'
+    }
 
     environment {
-        SONAR_HOST_URL = 'http://localhost:9000'
-        USER_DOCKER = 'tlian0206'
-        IMAGE_NAME="app-front"
-        BUILD_NUMBER="${env.BUILD_NUMBER}"
-        PROY_DIR = 'app-front'
+        SONARQUBE = 'SonarQube-Server'
     }
 
     stages {
-        stage('checkout'){
+        stage('checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('install dependencies & Test') {
-            steps {
-                dir("${PROY_DIR}") {
-                    sh '''
+        stage('Install dependencies & test') {
+            dir('app-front') {
+                steps {
+                    sh """
                         if [ -f package-lock.json ]; then
-                          npm ci
+                            npm ci
                         else
-                          echo "⚠️ package-lock.json no encontrado, usando npm install"
-                          npm install
+                            echo "⚠️ package-lock.json no encontrado, usando npm install"
+                            npm install
                         fi
 
                         npm test -- --coverage --watchAll=false
-                    '''
-                }
-            }
-        }
-
-        stage('SonarQube Analysis'){
-            steps {
-                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
-                    dir("${PROY_DIR}"){
-                        sh """
-                        sonar-scanner -Dsonar.token=$TOKEN -Dsonar.host.url=$SONAR_HOST_URL \
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Build React App & Docker image') {
-            steps {
-                dir("${PROY_DIR}") {
-                    sh """
-                    npm run build
-                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
                     """
                 }
             }
         }
 
-        stage('Archive Build') {
+        state('SOnarQube Analysis') {
             steps {
-                archiveArtifacts artifacts: 'app-front/build/**', fingerprint: true
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'DOCKER', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        def TAG = "${USER_DOCKER}/${IMAGE_NAME}:V-${BUILD_NUMBER}"
-                        sh """
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${TAG}
-                        docker push ${TAG}
-                        """
+                withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
+                    withSonarQubeEnv(SONARQUBE) {
+                        dir('app-front') {
+                            sh """
+                            sonar-scanner -Dsonar.token=$TOKEN
+                            """
+                        }
                     }
                 }
             }
         }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
     }
+
     post {
-        always {
-            cleanWs()
+        failure {
+            echo 'Pipeline falló ❌ — verifica los logs.'
         }
         success {
-            echo '✅ Contenerizado y subido a DockerHub.'
-            }
-        failure {
-            echo '❌ fallo validar logs.'
+            echo 'Pipeline completado con éxito 🎉'
         }
     }
 }
