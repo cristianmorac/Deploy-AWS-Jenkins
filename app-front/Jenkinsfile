@@ -34,7 +34,7 @@ pipeline {
             }
         }
 
-        state('SOnarQube Analysis') {
+        stage('SOnarQube Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'TOKEN_SONAR', variable:'TOKEN')]) {
                     withSonarQubeEnv(SONARQUBE) {
