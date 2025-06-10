@@ -58,11 +58,13 @@ pipeline {
 
         stage('build app') {
             steps {
+                def workspace = 'app-front'
                 def jobName = env.JOB_NAME
                 script {
-                    build job: 'quality', wait: true,
+                    build job: 'pipeline-build', wait: true,
                 parameters: [
-                    string(name:'pipeline-validate', value: jobName)
+                    string(name:'worrkspace', value: workspace)
+                    string(name: 'jobName', value: jobName)
                 ]
                 }
             }
