@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'Node-app'
+    }
+
+    parameters {
+        string(name: 'workspace', defaultValue: '', description: 'Ruta relativa del proyecto')
+        string(name: 'jobName', defaultValue: '', description: 'Nombre del job')
+    }
+
+    environment {
+        RUTA = "/var/lib/jenkins/workspace/"
+    }
+
+    stages {
+        stage('docker build') {
+            steps {
+                script {
+                    def fecha = new Date().format("yyyy-MM-dd")
+                    def imageName = "app-front:${fecha}"
+                    def ruta = "${RUTA}${params.jobName}/${params.workspace}"
+
+                    echo "Ruta calculada: ${ruta}"
+                    echo "Job name: ${params.jobName}"
+                    echo "Imagen a construir: ${imageName}"
+
+                    dir("${ruta}") {
+                        sh """
+                            npm install
+                            npm run build
+                            docker build -t ${imageName} .
+                        """
+                    }
+
+                    // Guardar como variable para usarla después
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - ${imageName}"
+                    env.BUILD_IMAGE = imageName
+                }
+            }
+        }
+
+        stage('push to a repo') {
+            steps {
+                script {
+                    build job: 'pipeline-push',
+                    wait: true,
+                    parameters: [
+                        string(name: 'dockerImage', value: env.BUILD_IMAGE)
+                    ]
+                }
+            }
+        }
+    }
+}
