@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'dockerImage', defaultValue: '', description: 'Nombre de la imagen Docker')
+    }
+
+    environment {
+        DOCKER_NEXUS = 'http://localhost:5000/'
+    }
+    
+    stages {
+        stage('push to a repo') {
+            steps {
+                withCredentials(usernamePassword(credentialsId: 'DOCKER_NEXUS', usernameVariable: 'USER', passwordVariable: 'PASS')) {
+                    sh  """
+                        echo ' echo $PASS | docker login $DOCKER_NEXUS -u $USER --password-stdin'
+                        docker push $DOCKER_NEXUS/${params.dockerImage}
+                        echo "Docker image ${params.dockerImage} pushed to Nexus repository."
+                        """
+                }    
+            }
+        }
+    }
+}
