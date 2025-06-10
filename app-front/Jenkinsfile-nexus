@@ -11,6 +11,7 @@ pipeline {
     
     stages {
         stage('push to a repo') {
+            // Se debe validar este paso no funciona
             steps {
                 withCredentials(usernamePassword(credentialsId: 'DOCKER_NEXUS', usernameVariable: 'USER', passwordVariable: 'PASS')) {
                     sh  """
