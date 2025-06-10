@@ -56,7 +56,7 @@ pipeline {
             }
         }
 
-        stage ('build app') {
+        stage('build app') {
             steps {
                 build job: 'pipeline-build', wait: true
             }
