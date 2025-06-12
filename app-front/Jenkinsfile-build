@@ -12,7 +12,7 @@ pipeline {
 
     environment {
         RUTA_WORKSAPACE = "/var/lib/jenkins/workspace/${params.jobName}"
-        RUTA = "/var/lib/jenkins/workspace/${params.jobName}/${params.workspace}"
+        RUTA = "${RUTA_WORKSAPACE}/${params.workspace}"
         IMAGE_NAME = "app-front:latest"
         NEXUS_URL = '172.25.229.168:5000'
     }
