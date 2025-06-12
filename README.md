@@ -6,7 +6,6 @@
 - [Descripción del proyecto](#descripción-del-proyecto)
 - [Proyecto](#proyecto) 
 - [Tecnologías utilizadas](#tecnologías-y-herramientas)
-- [Despliegue del Frontend](#despliegue-del-frontend)
 
 ## Descripción del proyecto
 
@@ -22,6 +21,7 @@ Este proyecto consiste en el desarrollo, validación y despliegue automático de
 - **Cloud Computing** con AWS
 - **Calidad del código** con SonarQube
 - **Repositorio de artefactos** con sonatype nexus repositroy
+
 ## Proyecto
 
 ### Estructura
@@ -54,8 +54,6 @@ git commit -m "docs(semana-07): agregar notas sobre Infraestructura como código
 git commit -m "fix(semana-10): corregir configuración Prometheus"
 ```
 
-
-
 ## Tecnologías y herramientas
 
 ### Infraestructura y contenedores
@@ -82,6 +80,3 @@ git commit -m "fix(semana-10): corregir configuración Prometheus"
 ### Calidad del código y análisis
 ![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white)
 
-## Despliegue del Frontend
-
-Se realiza el despliegue de una aplicación creada con el Frontend React.
