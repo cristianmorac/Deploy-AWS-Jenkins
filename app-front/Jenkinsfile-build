@@ -11,44 +11,47 @@ pipeline {
     }
 
     environment {
-        RUTA = "/var/lib/jenkins/workspace/"
+        RUTA_WORKSAPACE = "/var/lib/jenkins/workspace/${params.jobName}"
+        RUTA = "/var/lib/jenkins/workspace/${params.jobName}/${params.workspace}"
+        IMAGE_NAME = "app-front:latest"
+        NEXUS_URL = '172.25.229.168:5000'
     }
 
     stages {
-        stage('docker build') {
+        stage('Docker Build') {
             steps {
-                script {
-                    def fecha = new Date().format("yyyy-MM-dd")
-                    def imageName = "app-front:${fecha}"
-                    def ruta = "${RUTA}${params.jobName}/${params.workspace}"
-
-                    echo "Ruta calculada: ${ruta}"
-                    echo "Job name: ${params.jobName}"
-                    echo "Imagen a construir: ${imageName}"
-
-                    dir("${ruta}") {
-                        sh """
-                            npm install
-                            npm run build
-                            docker build -t ${imageName} .
-                        """
-                    }
-
-                    // Guardar como variable para usarla después
-                    currentBuild.displayName = "#${env.BUILD_NUMBER} - ${imageName}"
-                    env.BUILD_IMAGE = imageName
+                dir("${RUTA}") {
+                    sh """
+                        npm install
+                        npm run build
+                        docker build -t ${NEXUS_URL}/${IMAGE_NAME} .    
+                    """
                 }
             }
         }
 
-        stage('push to a repo') {
+        stage('Push to Nexus') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_NEXUS', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh """
+                        echo $PASS | docker login ${NEXUS_URL} -u $USER --password-stdin
+                        docker push ${NEXUS_URL}/${IMAGE_NAME}
+                    """
+                }
+            }
+        }
+    
+        stage('Clean Up workspace') {
             steps {
                 script {
-                    build job: 'pipeline-push',
-                    wait: true,
-                    parameters: [
-                        string(name: 'dockerImage', value: env.BUILD_IMAGE)
-                    ]
+                    sh """
+                    if [ -d "${RUTA_WORKSAPACE}" ]; then
+                        rm -rf ${RUTA_WORKSAPACE}
+                        echo "Workspace ${RUTA_WORKSAPACE} cleaned up."
+                    else
+                        echo "Workspace ${RUTA_WORKSAPACE} does not exist."
+                    fi
+                    """
                 }
             }
         }
